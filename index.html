@@ -793,7 +793,7 @@ function updateMapHint() {
 // ══════════════════════════════════════════
 //  MARKERS
 // ══════════════════════════════════════════
-function makeMarkerEl(isLatest) {
+function makeMarkerEl(isLatest, num) {
   // Outer element: MapLibre GL applies its own positioning `transform`
   // (translate to the marker's screen pixel) directly to this element.
   // We never touch `transform` on it ourselves — that's the whole fix.
@@ -805,8 +805,18 @@ function makeMarkerEl(isLatest) {
   const color = isLatest ? '#ef4444' : '#eab308'; // current = red, past points = yellow
   const size = isLatest ? 30 : 20;
   const pin=document.createElement('div');
-  pin.style.cssText=`width:${size}px;height:${size}px;border-radius:50% 50% 50% 0;background:${color};border:2px solid #fff;transform:rotate(-45deg);box-shadow:0 2px 8px #0008;transition:transform .15s,box-shadow .15s;${isLatest?'z-index:5;':'z-index:1;'}`;
+  pin.style.cssText=`position:relative;width:${size}px;height:${size}px;border-radius:50% 50% 50% 0;background:${color};border:2px solid #fff;transform:rotate(-45deg);box-shadow:0 2px 8px #0008;transition:transform .15s,box-shadow .15s;${isLatest?'z-index:5;':'z-index:1;'}`;
   el.appendChild(pin);
+
+  // Number label: counter-rotated +45deg (pin is rotated -45deg) so the
+  // digits render upright, and centered in the un-rotated square portion
+  // of the teardrop shape.
+  if (num!=null) {
+    const label=document.createElement('span');
+    label.textContent=num;
+    label.style.cssText=`position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;transform:rotate(45deg);color:#fff;font-family:'Inter',sans-serif;font-weight:700;font-size:${isLatest?12:10}px;line-height:1;pointer-events:none;`;
+    pin.appendChild(label);
+  }
 
   el.onmouseenter=()=>{pin.style.transform='rotate(-45deg) scale(1.25)';pin.style.boxShadow=`0 4px 16px ${color}aa`;};
   el.onmouseleave=()=>{pin.style.transform='rotate(-45deg)';pin.style.boxShadow='0 2px 8px #0008';};
@@ -833,10 +843,10 @@ function renderAllMarkers(){
     });
   }
 
-  trail.forEach((e,i)=> addMarker(e, i===trail.length-1));
+  trail.forEach((e,i)=> addMarker(e, i===trail.length-1, i+1));
 }
-function addMarker(e, isLatest) {
-  const el=makeMarkerEl(isLatest);
+function addMarker(e, isLatest, num) {
+  const el=makeMarkerEl(isLatest, num);
   const m=new maplibregl.Marker({element:el,anchor:'bottom-left'}).setLngLat([e.lng,e.lat]).addTo(map);
   el.addEventListener('click',(ev)=>{ev.stopPropagation();openDetailPopup(e);});
   currentMarkers.push(m);
