@@ -34,7 +34,7 @@ see the deploy instructions.
 """
 
 from flask import Flask, request, jsonify, send_from_directory, Response
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 import threading
 import time
@@ -65,7 +65,7 @@ def upload():
     with lock:
         images[img_id] = {
             "data": data,
-            "timestamp": datetime.now(),
+            "timestamp": datetime.now(timezone.utc),
             "lat": float(lat) if lat else None,
             "lng": float(lng) if lng else None,
             "device": device or "Unknown device",
@@ -117,7 +117,7 @@ def gallery_page():
 
 
 def cleanup_expired():
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     with lock:
         expired = [i for i, m in images.items()
                    if (now - m["timestamp"]).total_seconds() > EXPIRY_SECONDS]
