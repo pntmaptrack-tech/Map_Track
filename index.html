@@ -769,10 +769,21 @@ function updateMapHint() {
 //  MARKERS
 // ══════════════════════════════════════════
 function makeMarkerEl() {
+  // Outer element: MapLibre GL applies its own positioning `transform`
+  // (translate to the marker's screen pixel) directly to this element.
+  // We must never touch `transform` on it ourselves, or we'll wipe out
+  // that positioning and the marker will jump to the container's origin.
   const el=document.createElement('div');
-  el.style.cssText='width:28px;height:28px;border-radius:50% 50% 50% 0;background:#3b82f6;border:2px solid #fff;transform:rotate(-45deg);cursor:pointer;box-shadow:0 2px 8px #0008;transition:transform .15s,box-shadow .15s;';
-  el.onmouseenter=()=>{el.style.transform='rotate(-45deg) scale(1.2)';el.style.boxShadow='0 4px 16px #3b82f6aa';};
-  el.onmouseleave=()=>{el.style.transform='rotate(-45deg)';el.style.boxShadow='0 2px 8px #0008';};
+  el.style.cssText='cursor:pointer;';
+
+  // Inner pin: all our own visual styling (shape, rotation, hover scale)
+  // lives here instead, completely isolated from MapLibre's transform.
+  const pin=document.createElement('div');
+  pin.style.cssText='width:28px;height:28px;border-radius:50% 50% 50% 0;background:#3b82f6;border:2px solid #fff;transform:rotate(-45deg);box-shadow:0 2px 8px #0008;transition:transform .15s,box-shadow .15s;';
+  el.appendChild(pin);
+
+  el.onmouseenter=()=>{pin.style.transform='rotate(-45deg) scale(1.2)';pin.style.boxShadow='0 4px 16px #3b82f6aa';};
+  el.onmouseleave=()=>{pin.style.transform='rotate(-45deg)';pin.style.boxShadow='0 2px 8px #0008';};
   return el;
 }
 // Only the currently selected device's latest fix is ever plotted —
