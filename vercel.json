@@ -1,0 +1,10 @@
+{
+  "builds": [
+    { "src": "gallery_server.py", "use": "@vercel/python" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "gallery_server.py" }
+  ]
+}
+
+
