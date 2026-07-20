@@ -1,6 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <style>
+
+#splash-screen img{
+    width:700px;
+    max-width:95%;
+    height:auto;
+}
+#splash-screen h1{
+    font-size:64px;
+    font-weight:700;
+    color:#111;
+    letter-spacing:2px;
+    margin:0;
+}
+</style>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>MapTrack — Field Database</title>
@@ -170,10 +185,45 @@
   .badge-blue { background:#1e3a5f; color:var(--accent2); }
   .maplibregl-popup-content { background:var(--surface) !important; color:var(--text) !important; border:1px solid var(--border) !important; border-radius:10px !important; padding:0 !important; box-shadow:0 4px 20px #000a !important; }
   .maplibregl-popup-tip { display:none; }
+#splash-screen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: white;
+    z-index: 9999;
+}
+
+
+
+
+#splash-screen h1 {
+    font-size: 72px;
+    font-weight: 700;
+    color: #000;
+    margin: 0;
+}
+
+
+
+#splash-screen{
+    transition: opacity 0.8s ease;
+}
+
+.fade-out{
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+}
 </style>
 </head>
 <body>
-
+<div id="splash-screen">
+    <img src="pnt.png" alt="PNT Robotics">
+    
+</div>
 <!-- TOPBAR -->
 <div class="topbar">
   <div class="logo">MapTrack <span>Field DB</span></div>
@@ -187,14 +237,15 @@
   <button class="btn btn-primary btn-sm" onclick="syncFromSheet()">↻ Sync</button>
 </div>
 
+
 <!-- WORKSPACE -->
 <div class="workspace landing" id="workspace">
   <div class="sidebar">
-    <div class="tabs">
-      <div class="tab active" onclick="switchTab('entries')">📍 Entries</div>
-      <div class="tab" onclick="switchTab('add')">＋ Add</div>
-      <div class="tab" onclick="switchTab('config')">🔗 Sheet</div>
-    </div>
+ <div class="tabs">
+  <div class="tab active" onclick="switchTab('entries')">📍 Entries</div>
+  <div class="tab" onclick="switchTab('add')">＋ Add</div>
+  <div class="tab" onclick="switchTab('config')">🔗 Sheet</div>
+</div>
 
     <!-- ENTRIES TAB -->
     <div class="tab-panel active" id="tab-entries">
@@ -450,6 +501,8 @@ let viewerImages = [], viewerIdx = 0;
 // Map is now gated on device selection: nothing is plotted until a
 // device name is picked from the sidebar list.
 let selectedDevice = null;
+let employees =
+JSON.parse(localStorage.getItem("employees") || "[]");
 
 // ══════════════════════════════════════════
 //  INIT
@@ -620,7 +673,11 @@ async function uploadImageToDrive(base64Data, filename) {
 //  FORM
 // ══════════════════════════════════════════
 function switchTab(name) {
-  const names=['entries','add','config'];
+  const names=[
+'entries',
+'add',
+'config'
+];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',names[i]===name));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
@@ -1000,6 +1057,23 @@ function toast(msg,type=''){
 function htmlEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function fmtDate(s){try{return new Date(s).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'});}catch{return s;}}
 document.getElementById('f-datetime').value=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
+</script>
+<script>
+window.onload = function () {
+
+    setTimeout(function () {
+
+        document.getElementById("splash-screen").classList.add("fade-out");
+
+        setTimeout(function () {
+            document.getElementById("splash-screen").remove();
+        }, 800);
+
+    }, 3000);
+
+};
+
+
 </script>
 </body>
 </html>
