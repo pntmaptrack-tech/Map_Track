@@ -125,6 +125,11 @@ def dashboard_page():
 def gallery_page():
     return send_from_directory(BASE_DIR, "image_gallery.html")
 
+@app.route("/pnt.png")
+def serve_logo():
+    return send_from_directory(BASE_DIR, "pnt.png")
+
+
 
 def cleanup_expired():
     now = datetime.now(timezone.utc)
