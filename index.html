@@ -312,10 +312,10 @@
     <label>Time col #</label>
     <input id="col-time" type="number" value="5" min="1"/>
 </div>
-          <div class="field-group"><label>Category col #</label><input id="col-cat" type="number" value="5" min="1"/></div>
-          <div class="field-group"><label>Notes col #</label><input id="col-notes" type="number" value="6" min="1"/></div>
-          <div class="field-group"><label>Images col #</label><input id="col-imgs" type="number" value="7" min="1"/></div>
-          <div class="field-group"><label>Row ID col #</label><input id="col-id" type="number" value="8" min="1"/></div>
+          <div class="field-group"><label>Category col #</label><input id="col-cat" type="number" value="6" min="1"/></div>
+          <div class="field-group"><label>Notes col #</label><input id="col-notes" type="number" value="7" min="1"/></div>
+          <div class="field-group"><label>Images col #</label><input id="col-imgs" type="number" value="8" min="1"/></div>
+          <div class="field-group"><label>Row ID col #</label><input id="col-id" type="number" value="9" min="1"/></div>
         </div>
         <button class="btn btn-ghost btn-sm" onclick="saveColumnMap()">Save Column Map</button>
 
@@ -402,7 +402,7 @@
     <div class="step">
       <div class="step-num">Step 1 — Sheet structure</div>
       <p>Create a Google Sheet with this exact header row:</p>
-      <p><code>Name | Latitude | Longitude | DateTime | Category | Notes | Images | RowID</code></p>
+      <p><code>Name | Latitude | Longitude | Date | Time | Category | Notes | Images | RowID</code></p>
       <p style="margin-top:8px">The <b>Images</b> column stores Google Drive direct URLs (comma or newline separated). The Apps Script fills this automatically.</p>
     </div>
 
@@ -515,8 +515,7 @@ let viewerImages = [], viewerIdx = 0;
 // Map is now gated on device selection: nothing is plotted until a
 // device name is picked from the sidebar list.
 let selectedDevice = null;
-let employees =
-JSON.parse(localStorage.getItem("employees") || "[]");
+
 
 // ══════════════════════════════════════════
 //  INIT
@@ -642,7 +641,7 @@ datetime:
       category: (r[colMap.cat]||'').trim(),
       notes:    (r[colMap.notes]||'').trim(),
       images:   (r[colMap.imgs]||'').trim(),
-    })).filter(e => e.lat!==0 && e.lng!==0 && e.name);
+    })).filter(e => e.name);
     if (!parsed.length) { toast('No valid entries — check column mapping','err'); return; }
     entries = parsed;
     saveLocalEntries(); renderEntriesList(); renderAllMarkers();
@@ -693,10 +692,10 @@ async function uploadImageToDrive(base64Data, filename) {
 //  FORM
 // ══════════════════════════════════════════
 function switchTab(name) {
-  const names=[
-'entries',
-'add',
-'config'
+  const names = [
+    'entries',
+    'add',
+    'config'
 ];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',names[i]===name));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
@@ -727,7 +726,10 @@ async function submitEntry() {
   const name=document.getElementById('f-name').value.trim();
   const lat=parseFloat(document.getElementById('f-lat').value);
   const lng=parseFloat(document.getElementById('f-lng').value);
-  const datetime=document.getElementById('f-datetime').value;
+  const datetime = document.getElementById('f-datetime').value;
+
+const date = datetime ? datetime.split("T")[0] : "";
+const time = datetime ? datetime.split("T")[1] : "";
   const category=document.getElementById('f-category').value.trim();
   const notes=document.getElementById('f-notes').value.trim();
   const images=document.getElementById('f-images').value.trim();
@@ -735,15 +737,48 @@ async function submitEntry() {
   if (!name) { toast('Name is required','err'); return; }
   if (isNaN(lat)||isNaN(lng)) { toast('Valid coordinates required','err'); return; }
   const rowId=existId||('mt-'+Date.now());
-  const entry={id:rowId,name,lat,lng,datetime,category,notes,images};
+  const entry = {
+    id: rowId,
+    name,
+    lat,
+    lng,
+    date,
+    time,
+    datetime,
+    category,
+    notes,
+    images
+};
   if (existId) {
     const idx=entries.findIndex(e=>e.id===existId);
     if(idx>-1) entries[idx]=entry;
-    await sheetWrite({action:'update',rowId,name,lat,lng,datetime,category,notes,images});
+    await sheetWrite({
+    action:'update',
+    rowId,
+    name,
+    lat,
+    lng,
+    date,
+    time,
+    category,
+    notes,
+    images
+});
     toast('Entry updated ✓','ok');
   } else {
     entries.push(entry);
-    await sheetWrite({action:'append',rowId,name,lat,lng,datetime,category,notes,images});
+    await sheetWrite({
+    action:'append',
+    rowId,
+    name,
+    lat,
+    lng,
+    date,
+    time,
+    category,
+    notes,
+    images
+});
     toast('Entry added ✓','ok');
   }
   saveLocalEntries(); renderEntriesList(); resetForm();
@@ -758,7 +793,8 @@ function editEntry(id) {
   document.getElementById('f-name').value=e.name;
   document.getElementById('f-lat').value=e.lat;
   document.getElementById('f-lng').value=e.lng;
-  document.getElementById('f-datetime').value=e.datetime||'';
+  document.getElementById('f-datetime').value =
+    e.date && e.time ? `${e.date}T${e.time}` : "";
   document.getElementById('f-category').value=e.category||'';
   document.getElementById('f-notes').value=e.notes||'';
   document.getElementById('f-images').value=e.images||'';
