@@ -308,6 +308,10 @@
           <div class="field-group"><label>Lat col #</label><input id="col-lat" type="number" value="2" min="1"/></div>
           <div class="field-group"><label>Lng col #</label><input id="col-lng" type="number" value="3" min="1"/></div>
           <div class="field-group"><label>Date col #</label><input id="col-date" type="number" value="4" min="1"/></div>
+          <div class="field-group">
+    <label>Time col #</label>
+    <input id="col-time" type="number" value="5" min="1"/>
+</div>
           <div class="field-group"><label>Category col #</label><input id="col-cat" type="number" value="5" min="1"/></div>
           <div class="field-group"><label>Notes col #</label><input id="col-notes" type="number" value="6" min="1"/></div>
           <div class="field-group"><label>Images col #</label><input id="col-imgs" type="number" value="7" min="1"/></div>
@@ -495,7 +499,17 @@ function doGet(e) {
 //  STATE
 // ══════════════════════════════════════════
 let entries = [], config = {};
-let colMap = { name:0, lat:1, lng:2, date:3, cat:4, notes:5, imgs:6, id:7 };
+let colMap = {
+    name:0,
+    lat:1,
+    lng:2,
+    date:3,
+    time:4,
+    cat:5,
+    notes:6,
+    imgs:7,
+    id:8
+};
 let currentMarkers = [], pickMode = false, activeDetailId = null;
 let viewerImages = [], viewerIdx = 0;
 // Map is now gated on device selection: nothing is plotted until a
@@ -546,6 +560,7 @@ function loadConfig() {
     document.getElementById('col-lat').value   = colMap.lat+1;
     document.getElementById('col-lng').value   = colMap.lng+1;
     document.getElementById('col-date').value  = colMap.date+1;
+    document.getElementById("col-time").value = colMap.time + 1;
     document.getElementById('col-cat').value   = colMap.cat+1;
     document.getElementById('col-notes').value = colMap.notes+1;
     document.getElementById('col-imgs').value  = colMap.imgs+1;
@@ -560,16 +575,17 @@ function saveConfig() {
   toast('Config saved ✓','ok');
 }
 function saveColumnMap() {
-  colMap = {
+ colMap = {
     name:  +document.getElementById('col-name').value-1,
     lat:   +document.getElementById('col-lat').value-1,
     lng:   +document.getElementById('col-lng').value-1,
     date:  +document.getElementById('col-date').value-1,
+    time:  +document.getElementById('col-time').value-1,
     cat:   +document.getElementById('col-cat').value-1,
     notes: +document.getElementById('col-notes').value-1,
     imgs:  +document.getElementById('col-imgs').value-1,
-    id:    +document.getElementById('col-id').value-1,
-  };
+    id:    +document.getElementById('col-id').value-1
+};
   localStorage.setItem('maptrack_colmap', JSON.stringify(colMap));
   toast('Column map saved ✓','ok');
 }
@@ -618,7 +634,11 @@ async function syncFromSheet() {
       name:     (r[colMap.name]||'').trim(),
       lat:      parseFloat(r[colMap.lat])||0,
       lng:      parseFloat(r[colMap.lng])||0,
-      datetime: (r[colMap.date]||'').trim(),
+      date: (r[colMap.date] || '').trim(),
+time: (r[colMap.time] || '').trim(),
+datetime:
+    ((r[colMap.date] || '').trim() + " " +
+     (r[colMap.time] || '').trim()).trim(),
       category: (r[colMap.cat]||'').trim(),
       notes:    (r[colMap.notes]||'').trim(),
       images:   (r[colMap.imgs]||'').trim(),
