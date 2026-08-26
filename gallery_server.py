@@ -50,7 +50,7 @@ import uuid
 app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-EXPIRY_SECONDS = 5 * 60  # images live for 5 minutes
+EXPIRY_SECONDS = 24 * 60 * 60  # images live for 24 hrs
 
 # In-memory registry only — nothing touches disk.
 # { id: {data: bytes, timestamp: aware datetime (UTC), lat: float|None, lng: float|None, device: str|None} }
