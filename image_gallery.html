@@ -70,7 +70,7 @@
 
   <div class="gallery-header">
     <div class="gallery-title">🖼 Live Images</div>
-    <span class="badge">expires 5 min after upload</span>
+    <span class="badge">expires 24 hr after upload</span>
   </div>
   <div class="gallery-grid" id="gallery-grid">
     <div class="empty-state"><div class="big">📭</div>No images yet — waiting for a device to upload.</div>
@@ -89,7 +89,7 @@
 </div>
 
 <script>
-const EXPIRY_MS = 5 * 60 * 1000;
+const EXPIRY_MS = 24 * 60 * 60 * 1000;
 let currentImages = [];
 
 async function refreshGallery() {
@@ -149,7 +149,15 @@ function updateExpiryBars() {
     }
     if (label) {
       const secs = Math.ceil(remaining/1000);
-      label.textContent = secs > 0 ? `expires in ${secs}s` : 'expiring…';
+      if (secs <= 0) {
+        label.textContent = 'expiring…';
+      } else if (secs < 60) {
+        label.textContent = `expires in ${secs}s`;
+      } else if (secs < 3600) {
+        label.textContent = `expires in ${Math.ceil(secs/60)}m`;
+      } else {
+        label.textContent = `expires in ${Math.ceil(secs/3600)}h`;
+      }
     }
   });
 }
